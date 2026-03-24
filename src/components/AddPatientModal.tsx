@@ -1,104 +1,4 @@
-// import * as Dialog from "@radix-ui/react-dialog";
-// import { useForm } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { X } from "lucide-react";
-// import {
-//   patientSchema,
-//   type PatientFormData,
-// } from "../lib/validations/patient";
-// import usePatientStore from "../store/usePatientStore";
-// import { Button } from "./ui/Button";
 
-// const AddPatientModal = () => {
-//   const addPatient = usePatientStore((state) => state.addPatient);
-
-//   const {
-//     register,
-//     handleSubmit,
-//     formState: { errors },
-//     reset,
-//   } = useForm<PatientFormData>({
-//     resolver: zodResolver(patientSchema),
-//   });
-
-//   const onSubmit = (data: PatientFormData) => {
-//     const newPatient = {
-//       ...data,
-//       id: crypto.randomUUID(),
-//       created_at: new Date().toISOString(),
-//     };
-
-//     addPatient(newPatient);
-//     reset();
-//     console.log("Patient Added!");
-//   };
-
-//   return (
-//     <Dialog.Root>
-//       <Dialog.Trigger asChild>
-//         <Button>Add New Patient</Button>
-//       </Dialog.Trigger>
-
-//       <Dialog.Portal>
-//         <Dialog.Overlay className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" />
-//         <Dialog.Content
-//           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-//                                         bg-white p-8 rounded-xl shadow-xl w-full max-w-md"
-//         >
-//           <Dialog.Title className="text-xl font-bold mb-4 text-slate-900">
-//             Add New Patient
-//           </Dialog.Title>
-
-//           <form
-//             action=""
-//             onSubmit={handleSubmit(onSubmit)}
-//             className="space-y-4"
-//           >
-//             <label htmlFor="fullname-id">
-//               Full Name:
-//               <input id="fullname-id" type="text" {...register("full_name")} />
-//             {errors.full_name && <span>{errors.full_name?.message}</span>}
-
-//             </label>
-//             <label htmlFor="email-id">
-//               Email:
-//               <input id="email-id" type="email" {...register("email")} />
-//               {errors.email && <span>{errors.email?.message}</span>}
-//             </label>
-//             <label htmlFor="phone-id">
-//                 Phone:
-//                 <input id="phone-id" {...register('phone')} />
-//                 {errors.phone && <span>{errors.phone?.message}</span>}
-//             </label>
-
-//             <label htmlFor="dob-id">
-//                 Date of Birth:
-//                 <input type="date" id="dob-id" {...register('date_of_birth')} />
-//                 {errors.date_of_birth && <span>{errors.date_of_birth?.message}</span> }
-
-//             </label>
-
-//             <label htmlFor="gender-id">
-//                 Gender:
-//                 <select id="gender-id" {...register("gender")}>
-//                     <option value="select">Select</option>
-//                     <option value="male">Male</option>
-//                     <option value="female">Female</option>
-//                     <option value="other">Other</option>
-
-//                 </select>
-//             </label>
-
-//             <Button variant="danger" type="submit">Save</Button>
-
-//           </form>
-//         </Dialog.Content>
-//       </Dialog.Portal>
-//     </Dialog.Root>
-//   );
-// };
-
-// export default AddPatientModal;
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { useForm } from "react-hook-form";
@@ -110,11 +10,20 @@ import {
 } from "../lib/validations/patient";
 import usePatientStore from "../store/usePatientStore";
 import { Button } from "./ui/Button";
-import  { useState } from "react";
+import  { useEffect, useState } from "react";
+
 
 const AddPatientModal = () => {
   const addPatient = usePatientStore((state) => state.addPatient);
-  const [open, setOpen] = useState(false);
+  const updatePatients = usePatientStore((state) => state.updatePatient);
+  const selectedPatient = usePatientStore((state) => state.selectedPatient);
+  const setSelectedPatient = usePatientStore((state) => state.setSelectedPatient);
+  const isModalOpen = usePatientStore((state) => state.isModalOpen);
+  const setIsModalOpen = usePatientStore((state) => state.setIsModalOpen);
+  const isLoading = usePatientStore((state) => state.isLoading)
+
+  const [formError, setFormError] = useState<string | null> (null)
+  
 
   const {
     register,
@@ -125,18 +34,61 @@ const AddPatientModal = () => {
     resolver: zodResolver(patientSchema),
   });
 
-  const onSubmit = (data: PatientFormData) => {
-    const newPatient = {
-      ...data,
-      id: crypto.randomUUID(),
-      created_at: new Date().toISOString(),
-    };
+  useEffect(() => {
+    if(selectedPatient){
+        reset(selectedPatient)
+    }
+  }, [selectedPatient,reset]);
 
-    addPatient(newPatient);
-    reset();
-    setOpen(false);
-    console.log("Patient Added!");
+
+  const clearForm = () => {
+    setSelectedPatient(null);
+     reset({
+            full_name: "",
+            email: "",
+            phone: "",
+            date_of_birth: "",
+            gender: undefined,
+            blood_group: "",
+        })
   };
+
+ 
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setIsModalOpen(isOpen);
+
+    if(!isOpen){
+      clearForm()
+       
+    }
+  };
+
+  const onSubmit = async (data: PatientFormData) => {
+    setFormError(null);
+
+    try{
+        if(selectedPatient){
+            await updatePatients(selectedPatient.id, data)
+        } else {
+            await addPatient(data);
+        }
+       handleOpenChange(false);
+       
+    } catch(error: any) {
+        setFormError(error.message || "Something went wrong. Please try again.")
+        
+
+    }
+  
+  };
+
+
+  const getButtonText = () => {
+    if(isLoading) return selectedPatient ? 'Updating Patient Info' : 'Registering Patient';
+    return selectedPatient ? 'Save Changes' : 'Register Patient';
+
+  }
 
   // Reusable Tailwind classes for inputs to keep it clean
   const inputStyles =
@@ -146,17 +98,19 @@ const AddPatientModal = () => {
   const errorStyles = "text-xs text-red-500 mt-1 block";
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen} >
-      <Dialog.Trigger asChild>
-        <Button>Add New Patient</Button>
-      </Dialog.Trigger>
+    <Dialog.Root open={isModalOpen} onOpenChange={handleOpenChange} >
+      
+        <Button onClick={() => { clearForm(); setIsModalOpen(true) }}>
+            Add New Patient
+        </Button>
+      
 
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-950 p-8 rounded-xl shadow-2xl w-full max-w-md z-50 border dark:border-slate-800">
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white  dark:bg-slate-950 p-8 rounded-xl shadow-2xl w-full  max-w-md z-50 border dark:border-slate-800">
           <div className="flex justify-between items-center mb-6">
             <Dialog.Title className="text-xl font-bold text-slate-900 dark:text-white">
-              Add New Patient
+             { selectedPatient  ? 'Edit Patient Record' :'Add New Patient' }
             </Dialog.Title>
             <Dialog.Close className="text-slate-400 hover:text-slate-600 transition-colors">
               <X size={20} />
@@ -164,12 +118,19 @@ const AddPatientModal = () => {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {formError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">
+                    {formError}
+                </div>
+            )}
+
             {/* Full Name */}
             <div>
               <label htmlFor="fullname-id" className={labelStyles}>
                 Full Name
               </label>
               <input
+            required
                 id="fullname-id"
                 type="text"
                 placeholder="Olugbemi Moses"
@@ -187,6 +148,7 @@ const AddPatientModal = () => {
                 Email Address
               </label>
               <input
+              required
                 id="email-id"
                 type="email"
                 placeholder="moses@gmail.com"
@@ -205,6 +167,8 @@ const AddPatientModal = () => {
                   Phone
                 </label>
                 <input
+              required
+
                   id="phone-id"
                   placeholder="0801234..."
                   {...register("phone")}
@@ -221,6 +185,8 @@ const AddPatientModal = () => {
                   DOB
                 </label>
                 <input
+              required
+
                   type="date"
                   id="dob-id"
                   {...register("date_of_birth")}
@@ -240,6 +206,8 @@ const AddPatientModal = () => {
                 Gender
               </label>
               <select
+              required
+
                 id="gender-id"
                 {...register("gender")}
                 className={inputStyles}
@@ -254,21 +222,47 @@ const AddPatientModal = () => {
               )}
             </div>
 
+            {/* {Blood Group} */}
+            <div>
+                <label className={labelStyles} htmlFor="bloodgroup-id">
+                    Blood Group 
+                </label>
+                <select  
+                {...register('blood_group')}
+                className={inputStyles}
+                 id="bloodgroup_id">
+                    <option value="select">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB">AB</option>
+                    <option value="AB">AB</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+
+            </div>
+
             <div className="pt-4 flex gap-3">
               <Dialog.Close asChild>
                 <Button variant="secondary" className="w-full">
                   Cancel
                 </Button>
               </Dialog.Close>
-              <Button variant="primary" type="submit" className="w-full">
-                Save Patient
+              <Button disabled={isLoading} variant="primary" type="submit" className="w-full">
+               {getButtonText()}
               </Button>
             </div>
           </form>
         </Dialog.Content>
       </Dialog.Portal>
+
+      
     </Dialog.Root>
   );
+
+ 
 };
 
 export default AddPatientModal;

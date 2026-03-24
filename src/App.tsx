@@ -3,37 +3,36 @@ import { useEffect } from 'react';
 import './App.css'
 import PatientList from './components/PatientList';
 import usePatientStore from './store/usePatientStore';
-import type { Patient } from './types/medical';
-import { Button } from './components/ui/Button';
-import { Plus } from 'lucide-react';
+
+
 import AddPatientModal from './components/AddPatientModal';
+import { Loader } from 'lucide-react';
 
 
 
 function App() {
 
- const patients = usePatientStore((state) => state.patients);
- const setPatients = usePatientStore((state) => state.setPatients);
+
+const patients = usePatientStore((state) => state.patients);
+const isLoading = usePatientStore((state) => state.isLoading);
+const fetchPatients = usePatientStore((state) => state.fetchPatients);
+
+
 
  useEffect(() => {
-   const initialData: Patient[] = [
-    {
-      id: '1',
-      full_name: 'John Doe',
-      email: 'john@gmail.com',
-      phone: '08141378689',
-      date_of_birth: '1985-05-15',
-      gender: 'male',
-      blood_group: 'O+',
-      created_at: new Date().toISOString(),
-    },
-     
+  fetchPatients();
+ }, [fetchPatients])
+ 
 
+ if(isLoading && patients.length === 0) {
+  
+  return <div className='flex flex-col gap-4 items-center justify-center mt-10' >
+     <Loader/>
+      <p className='text-center p-4'>Fecthing Patients from AetherCare</p> 
+     </div>
+ }
 
-  ];
-
-  setPatients(initialData);
- }, [setPatients])
+ 
 
 
   const handleSelect = (id: string) => {
@@ -43,17 +42,22 @@ function App() {
 
 
   return (
-    <div className="p-8 bg-slate-50 dark:bg-slate-950  transition-colors duration-300 min-h-screen">
+    <div className="p-8 relative bg-slate-50 dark:bg-slate-950  transition-colors duration-300 min-h-screen">
 
-      <header className='mb-8'>
-        <h1 className='text-3xl font-bold text-slate-900 dark:text-slate-100'>AetherCare Dashboard</h1>
+      <header className='mb-8 flex justify-between'>
+       <div>
+         <h1 className='text-3xl font-bold text-slate-900 dark:text-slate-100'>AetherCare Dashboard</h1>
         <p className="text-slate-500  dark:text-slate-100">
-            Real-time {patients.length} {patients.length === 1 ? 'Patient' : 'Patients'} Management
+            Real-time  {patients.length === 1 ? 'Patient' : 'Patients'} Management
          </p>
+       </div>
+        <AddPatientModal />
 
-        <AddPatientModal/>
+
 
       </header>
+
+      
 
       <main>
         { patients.length > 0 ? (

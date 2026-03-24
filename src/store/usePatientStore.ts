@@ -1,33 +1,121 @@
-import {create} from 'zustand';
-import type { Patient } from '../types/medical';
+import { create } from "zustand";
+import type { Patient } from "../types/medical";
+import { supabase } from "../lib/supabase";
+
+
 
 //what the brain can remember and do
 interface PatientState {
-    patients: Patient[];
-    selectedPatient: Patient | null;
-    isLoading: boolean;
+  patients: Patient[];
+  selectedPatient: Patient | null;
+  isLoading: boolean;
+  isModalOpen: boolean;
+
+  setIsModalOpen: (open: boolean) => void;
+  fetchPatients: () => Promise<void>;
+
+  addPatient: (patient: Omit<Patient, "id" | "created_at">) => Promise<void>;
+  deletePatient: (id: string) => Promise<void>;
+  setSelectedPatient: (patient: Patient | null) => void;
+  updatePatient: (id: string, updates: Partial<Patient>) => Promise<void>;
+}
+
+const usePatientStore = create<PatientState>((set) => ({
+  patients: [],
+  selectedPatient: null,
+  isLoading: false,
+  isModalOpen:false,
+
+  setIsModalOpen: (open) => set({isModalOpen: open}),
+
+  fetchPatients: async () => {
+    set({ isLoading: true });
+    const { data, error } = await supabase
+      .from("patients")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+
+        const errormsg =` Error fetching patients:, ${error.message}`
+      console.error("Error fetching patients:", error.message);
+              throw new Error(errormsg)
+    } else {
+      set({ patients: data || [] });
+    }
+    set({ isLoading: false });
+  },
+
+  addPatient: async (patientData) => {
+    set({ isLoading: true });
+
+    const { data, error } = await supabase
+      .from("patients")
+      .insert(patientData)
+
+      .select()
+      .single();
+    console.log("Database Response Data:", data);
+    console.log("Database Response Error:", error);
+
+    if (error) {
+  const errormsg =` Error fetching patients:, ${error.message}`
+      console.error("Error fetching patients:", error.message);
+              throw new Error(errormsg)
+     
+    } else if (data) {
+      set((state) => ({
+        patients: [data, ...state.patients],
+      }));
+    }
+
+    set({ isLoading: false });
+  },
+  deletePatient: async (id: string) => {
+    set({ isLoading: true });
+
+    const { error } = await supabase.from("patients").delete().eq("id", id);
+
+    if (error) {
+      console.error("Error deleting patient:", error.message);
+      throw new Error(error.message)
+
+     
+    } else {
+      set((state) => ({
+        patients: state.patients.filter((patient) => patient.id !== id),
+      }));
+    }
+    set({ isLoading: false });
+  },
+
+  updatePatient: async (id, updates) => {
+    set({isLoading: true})
 
 
-    setPatients: (patients: Patient[]) => void;
-    addPatient: (patient: Patient) => void;
-    setSelectedPatient: (patient: Patient | null) => void;
-};
+    const { data, error } = await supabase
+      .from("patients")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
 
-const usePatientStore = create<PatientState>((set) =>({
-    patients: [],
-    selectedPatient: null,
-    isLoading: false,
-    setPatients: (patients) => set({patients}),
-    addPatient: (patient) => set((state) => ({
-        patients: [patient, ...state.patients]
-    })),
-    setSelectedPatient: (patient) => set({selectedPatient:patient}),
-}))
+    if (error) {
+      console.error("Update failed:", error.message);
+      throw new Error(error.message)
+      
+    } else if (data) {
+      set((state) => ({
+        patients: state.patients.map((patient) =>
+          patient.id === id ? data : patient,
+        ),
+      }));
+    } set({isLoading:false})
+  },
 
-export default usePatientStore
+  setSelectedPatient: (patient) => set({ selectedPatient: patient }),
+}));
 
-
-
-
+export default usePatientStore;
 
 // export default usePatientStore

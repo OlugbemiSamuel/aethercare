@@ -1,6 +1,9 @@
+
+import usePatientStore from "../store/usePatientStore";
 import type { Patient, Priority } from "../types/medical";
 import { Button } from "./ui/Button";
-import { User, Activity, Calendar } from "lucide-react";
+import { User, Activity, Calendar, Trash2, Edit } from "lucide-react";
+
 
 interface PatientCardProps {
   patient: Patient;
@@ -20,8 +23,20 @@ const PatientCard: React.FC<PatientCardProps> = ({
     emergency: "bg-red-100 text-red-700 animate-pulse ",
   };
 
+
+
+  const deletePatient = usePatientStore((state) => state.deletePatient);
+  const selectedPatient = usePatientStore((state) => state.setSelectedPatient)
+  const setIsModalOpen = usePatientStore((state) => state.setIsModalOpen);
+
+
+  const handleUpdate = () => {
+    selectedPatient(patient);
+    setIsModalOpen(true); 
+  };
+
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div className=" relative group  bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-50 rounded-lg">
@@ -31,7 +46,9 @@ const PatientCard: React.FC<PatientCardProps> = ({
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-lg">
               {patient.full_name}
             </h3>
-            <p className="text-sm text-slate-500  dark:text-slate-100">{patient.email}</p>
+            <p className="text-sm text-slate-500  dark:text-slate-100">
+              {patient.email}
+            </p>
           </div>
         </div>
         <span
@@ -53,14 +70,36 @@ const PatientCard: React.FC<PatientCardProps> = ({
           <span>Blood Group: {patient.blood_group || "Not recorded"}</span>
         </div>
       </div>
+      <div className="flex  justify-between">
+        <Button
+          variant="secondary"
+          className=" max-w-sm"
+          onClick={() => onViewDetails(patient.id)}
+        >
+          View Medical Records
+        </Button>
 
-      <Button
-        variant="secondary"
-        className="w-full"
-        onClick={() => onViewDetails(patient.id)}
-      >
-        View Medical Records
-      </Button>
+        <Button
+          onClick={() => handleUpdate()}
+          className=" p-2 text-slate-400   hover:text-red-600 hover:bg-red-300 rounded-lg  transition-all duration-200"
+          title="Delete Patient"
+        >
+          <Edit className="w-4 h-4" />
+        </Button>
+        <Button
+          onClick={() => {
+            if (
+              window.confirm('"Are you sure you want to delete this patient?"')
+            ) {
+              deletePatient(patient.id);
+            }
+          }}
+          className=" p-2 text-slate-400 bg-red-500  hover:text-red-600 hover:bg-red-300 rounded-lg  transition-all duration-200"
+          title="Delete Patient"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 };

@@ -15,7 +15,7 @@ const PatientList: React.FC<PatientListProps> = ({patients,onSelectPatient }) =>
                key={patient.id} 
               
                >
-                <PatientCard patient={patient} priority={'medium'} onViewDetails={onSelectPatient}  />
+                <PatientCard patient={patient} priority={'low'} onViewDetails={onSelectPatient}  />
 
                </div> 
             ))
