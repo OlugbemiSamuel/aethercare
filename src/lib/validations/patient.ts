@@ -7,6 +7,7 @@ export const patientSchema = z.object({
     date_of_birth: z.string().min(1,  "Date of birth is required"),
     gender: z.enum(['male', 'female', 'other']),
     blood_group: z.string().optional(),
+     priority: z.enum(['low', 'medium', 'high', 'emergency']),
 
 });
 

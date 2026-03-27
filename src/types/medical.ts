@@ -9,7 +9,9 @@ export interface Patient {
     date_of_birth: string;
     gender: 'male' | 'female' | 'other';
     blood_group?: string;
-    created_at: string
+    created_at: string;
+    priority:Priority;
+
 }
 
 export interface Appointement {

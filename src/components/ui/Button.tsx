@@ -24,7 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   // 3. The "Assembly"
   return (
     <button 
-      className={`px-4 py-2 rounded-lg font-semibold transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2  ${variants[variant]} ${className}`}
+      className={`px-3 py-2 rounded-lg font-semibold transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2  ${variants[variant]} ${className}`}
       disabled={isLoading || props.disabled}
       {...props}
     >

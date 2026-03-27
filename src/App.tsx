@@ -7,6 +7,7 @@ import usePatientStore from './store/usePatientStore';
 
 import AddPatientModal from './components/AddPatientModal';
 import { Loader } from 'lucide-react';
+import { Toaster } from 'sonner';
 
 
 
@@ -42,7 +43,7 @@ const fetchPatients = usePatientStore((state) => state.fetchPatients);
 
 
   return (
-    <div className="p-8 relative bg-slate-50 dark:bg-slate-950  transition-colors duration-300 min-h-screen">
+    <div className="p-6 relative bg-slate-50 dark:bg-slate-950  transition-colors duration-300 min-h-screen">
 
       <header className='mb-8 flex justify-between'>
        <div>
@@ -74,6 +75,9 @@ const fetchPatients = usePatientStore((state) => state.fetchPatients);
         }
         
       </main>
+
+
+      <Toaster position='top-right' richColors closeButton />
      
       
     </div>
