@@ -3,6 +3,7 @@ import type { Patient } from "../types/medical";
 import PatientCard from "./PatientCard";
 import EmptyState from "./EmptyState";
 import StatCard from "./ui/StatCard";
+import useDebounce from "../hooks/useDebounce";
 
 interface PatientListProps {
   patients: Patient[];
@@ -21,57 +22,94 @@ const PatientList: React.FC<PatientListProps> = ({
   onSelectPatient,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  const [filterStatus, setFilterStatus] = useState("all");
 
   const handleClearSearch = () => {
     setSearchQuery("");
+    setFilterStatus("all");
   };
-
 
   const inputStyles =
     "max-w-lg w-full px-3 py-2 bg-white dark:bg-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ";
 
-  const filteredPatients = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    const filteredList = !query
-      ? [...patients]
-      : patients.filter((patient) => {
-          const name = patient.full_name?.toLowerCase() ?? "";
-          const email = patient.email?.toLowerCase() ?? "";
-          return email.includes(query) || name.includes(query);
-        });
+  const { displayPatients, stats } = useMemo(() => {
+    const query = debouncedSearch.toLowerCase().trim();
 
-    return filteredList.sort((a, b) => {
-      const weightA = PriorityWeights[a.priority as string] ?? 0;
-      const weightB = PriorityWeights[b.priority as string] ?? 0;
-      return weightB - weightA;
-    });
-  }, [patients, searchQuery]);
-
-  const displayPatients = filteredPatients ?? [];
-
-  const stats = useMemo(() => {
     return patients.reduce(
       (acc, patient) => {
-        acc.total++;
-        if (patient.priority === "emergency") acc.emergency++;
-        if (patient.priority === "high" || patient.priority === "medium")
-          acc.stable++;
+        acc.stats.total++;
+
+        if (patient.priority === "emergency" || patient.priority === "high")
+          acc.stats.emergency++;
+        if (patient.priority === "medium" || patient.priority === "low")
+          acc.stats.stable++;
+
+        const name = patient.full_name?.toLowerCase() ?? "";
+        const email = patient.email?.toLowerCase() ?? "";
+        if (acc.stats.total === 1) {
+          console.log(`Checking "${name}" against "${query}"`);
+        }
+
+        const matchesSearch =  !query || name.includes(query) || email.includes(query);
+        
+        let matchesStatus = false;
+
+        if (filterStatus === "all")  matchesStatus = true;
+        else if (filterStatus === "emergency") {
+          matchesStatus =
+            patient.priority === "emergency" || patient.priority === "high";
+        } else if (filterStatus === "stable") {
+          matchesStatus =
+            patient.priority === "medium" || patient.priority === "low";
+        }
+
+        if (matchesSearch && matchesStatus) {
+          acc.displayPatients.push(patient);
+        }
+
         return acc;
       },
-      { total: 0, emergency: 0, stable: 0 },
+
+      {
+        displayPatients: [] as Patient[],
+        stats: { emergency: 0, stable: 0, total: 0 },
+      },
     );
-  }, [patients]);
+  }, [debouncedSearch, patients, filterStatus]);
+
+  const sortedPatients = useMemo(() => {
+    return [...displayPatients].sort((a, b) => {
+      const weightA = PriorityWeights[a.priority] ?? 0;
+      const weightB = PriorityWeights[b.priority] ?? 0;
+      return weightB - weightA;
+    });
+  }, [displayPatients]);
 
   return (
     <div className="space-y-6 ">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <StatCard color={"blue"} label={"Total Patients"} value={stats.total} />
-        <StatCard color={"red"} label={"Critical (Emergency)"} value={stats.emergency} />
-        <StatCard color={"amber"} label={"Stable Cases"} value={stats.stable} />
+        <StatCard
+          onSetStatus={() => setFilterStatus("all")}
+          color={"blue"}
+          label={"Total Patients"}
+          value={stats.total}
+         isActive={filterStatus === 'all'}        />
+        <StatCard
+          onSetStatus={() => setFilterStatus("emergency")}
+          color={"red"}
+          label={"Critical (Emergency)"}
+          value={stats.emergency}
+         isActive={filterStatus === 'emergency'}        />
+        <StatCard
+          onSetStatus={() => setFilterStatus("stable")}
+          color={"amber"}
+          label={"Stable Cases"}
+          value={stats.stable} 
+          isActive={filterStatus === 'stable'}        />
       </div>
 
       <div className="flex  flex-col gap-2">
-        
         <label
           htmlFor="search"
           className="text-sm font-medium text-slate-700 dark:text-slate-300"
@@ -88,9 +126,9 @@ const PatientList: React.FC<PatientListProps> = ({
         />
       </div>
 
-      {displayPatients.length > 0 ? (
+      {sortedPatients.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
-          {displayPatients.map((patient) => (
+          {sortedPatients.map((patient) => (
             <div key={patient.id}>
               <PatientCard
                 patient={patient}
@@ -101,7 +139,12 @@ const PatientList: React.FC<PatientListProps> = ({
           ))}
         </div>
       ) : (
-        <EmptyState onClear={handleClearSearch} />
+        <EmptyState
+          onAction={handleClearSearch}
+          actionText="Clear Search"
+          title="No Patient Found"
+          description={`We couldn't find any results for "${searchQuery}". Try adjusting your filters or search terms.`}
+        />
       )}
     </div>
   );

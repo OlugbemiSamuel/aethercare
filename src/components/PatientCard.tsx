@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+
 import usePatientStore from "../store/usePatientStore";
 import type { Patient, Priority } from "../types/medical";
 import { Button } from "./ui/Button";
@@ -23,7 +23,7 @@ const PatientCard: React.FC<PatientCardProps> = ({
     emergency: "bg-red-500 text-white animate-pulse ",
   };
 
-  const deletePatient = usePatientStore((state) => state.deletePatient);
+
   const selectedPatient = usePatientStore((state) => state.setSelectedPatient);
   const setIsModalOpen = usePatientStore((state) => state.setIsModalOpen);
 

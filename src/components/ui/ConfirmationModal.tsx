@@ -21,9 +21,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ patient }) => {
   const handleDelete = async (id: string) => {
     setModalError(null);
     setIsDeleting(true);
-
     const toastId = toast.loading("Deleting patient.....");
-
     try {
       await deletePatient(id);
 
@@ -31,7 +29,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ patient }) => {
         id: toastId,
         description: "The record has been permanently removed.",
       });
-
       setOpen(false);
     } catch (error: unknown) {
       const errorMsg =
@@ -50,11 +47,11 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ patient }) => {
 
   return (
     <AlertDialog.Root
-     open={open} 
-    onOpenChange={(isOpen) => {
-     if(!isDeleting )  setOpen(isOpen)
-      
-    }}>
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isDeleting) setOpen(isOpen);
+      }}
+    >
       <AlertDialog.Trigger asChild>
         <Button variant="danger" title="Delete Patient">
           <Trash size={18} />
@@ -68,20 +65,26 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ patient }) => {
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-xl shadow-xl max-w-md w-full"
         >
           {modalerror && (
-            <span className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600"> {`Could not delete patient: ${modalerror}`}</span>
+            <span className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+              {" "}
+              {`Could not delete patient: ${modalerror}`}
+            </span>
           )}
 
           <AlertDialog.Title className="text-xl mt-5 font-bold">
             Delete Patient Record?
           </AlertDialog.Title>
           <AlertDialog.Description className="mt-3 text-slate-600 leading-relaxed">
-           Are you sure you want to delete <strong>{patient.full_name}</strong>? This action is 
-            irreversible and will remove all associated medical history.
+            Are you sure you want to delete <strong>{patient.full_name}</strong>
+            ? This action is irreversible and will remove all associated medical
+            history.
           </AlertDialog.Description>
 
           <div className="mt-6 flex justify-end gap-3">
             <AlertDialog.Cancel asChild>
-              <Button disabled={isDeleting} variant="secondary">Cancel</Button>
+              <Button disabled={isDeleting} variant="secondary">
+                Cancel
+              </Button>
             </AlertDialog.Cancel>
 
             <Button
