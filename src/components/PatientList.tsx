@@ -47,15 +47,13 @@ const PatientList: React.FC<PatientListProps> = ({
 
         const name = patient.full_name?.toLowerCase() ?? "";
         const email = patient.email?.toLowerCase() ?? "";
-        if (acc.stats.total === 1) {
-          console.log(`Checking "${name}" against "${query}"`);
-        }
 
-        const matchesSearch =  !query || name.includes(query) || email.includes(query);
-        
+        const matchesSearch =
+          !query || name.includes(query) || email.includes(query);
+
         let matchesStatus = false;
 
-        if (filterStatus === "all")  matchesStatus = true;
+        if (filterStatus === "all") matchesStatus = true;
         else if (filterStatus === "emergency") {
           matchesStatus =
             patient.priority === "emergency" || patient.priority === "high";
@@ -86,27 +84,39 @@ const PatientList: React.FC<PatientListProps> = ({
     });
   }, [displayPatients]);
 
+  const lastUpdated = useMemo(() => {
+    const count = patients.length;
+    return new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }, [patients]);
+
   return (
     <div className="space-y-6 ">
+      <p className="text-3xl">Last Updated:{lastUpdated}</p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <StatCard
           onSetStatus={() => setFilterStatus("all")}
           color={"blue"}
           label={"Total Patients"}
           value={stats.total}
-         isActive={filterStatus === 'all'}        />
+          isActive={filterStatus === "all"}
+        />
         <StatCard
           onSetStatus={() => setFilterStatus("emergency")}
           color={"red"}
           label={"Critical (Emergency)"}
           value={stats.emergency}
-         isActive={filterStatus === 'emergency'}        />
+          isActive={filterStatus === "emergency"}
+        />
         <StatCard
           onSetStatus={() => setFilterStatus("stable")}
           color={"amber"}
           label={"Stable Cases"}
-          value={stats.stable} 
-          isActive={filterStatus === 'stable'}        />
+          value={stats.stable}
+          isActive={filterStatus === "stable"}
+        />
       </div>
 
       <div className="flex  flex-col gap-2">

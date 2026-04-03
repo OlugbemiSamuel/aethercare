@@ -62,8 +62,6 @@ const AddPatientModal = () => {
 
   const onSubmit = async (data: PatientFormData) => {
     setFormError(null);
-    
-
     try {
   
       if (selectedPatient) {

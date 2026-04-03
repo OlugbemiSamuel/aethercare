@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css'
 import PatientList from './components/PatientList';
 import usePatientStore from './store/usePatientStore';
@@ -8,6 +8,7 @@ import usePatientStore from './store/usePatientStore';
 import AddPatientModal from './components/AddPatientModal';
 import { Loader } from 'lucide-react';
 import { Toaster } from 'sonner';
+import PatientDetailsDrawer from './components/ui/PatientDetailsDrawer';
 
 
 
@@ -17,12 +18,16 @@ function App() {
 const patients = usePatientStore((state) => state.patients);
 const isLoading = usePatientStore((state) => state.isLoading);
 const fetchPatients = usePatientStore((state) => state.fetchPatients);
+const [ selectedPatientId, setSelectedPatientId] = useState<string | null>(null)
+    const updatePatient = usePatientStore((state) => state.updatePatient)
 
 
 
  useEffect(() => {
   fetchPatients();
  }, [fetchPatients])
+
+
  
 
  if(isLoading && patients.length === 0) {
@@ -37,8 +42,18 @@ const fetchPatients = usePatientStore((state) => state.fetchPatients);
 
 
   const handleSelect = (id: string) => {
-    alert(`Opening Patient ID: ${id}`);
+   setSelectedPatientId(id)
   };
+
+  const activePatient = patients.find((p) => p.id == selectedPatientId) || null;
+
+  
+
+  
+
+  
+
+ 
 
 
 
@@ -56,15 +71,19 @@ const fetchPatients = usePatientStore((state) => state.fetchPatients);
 
 
 
+
+
       </header>
 
       
 
       <main>
         { patients.length > 0 ? (
+          
           <PatientList
         patients={patients}
         onSelectPatient={handleSelect}/>
+        
         ) : (
           <div className="p-10 text-center border-2 border-dashed rounded-xl border-slate-200">
             <p className="text-slate-400">No Patient found in the system</p>
@@ -75,6 +94,19 @@ const fetchPatients = usePatientStore((state) => state.fetchPatients);
         }
         
       </main>
+
+        <PatientDetailsDrawer key={activePatient?.id ?? ''} onSavePatient={ async (updates) => {
+          try{
+            if(activePatient){
+              await updatePatient(activePatient.id, updates)
+            }
+          } catch(error){
+            console.error('failed to save note', error)
+          }
+        }
+          
+        } onClose={() => setSelectedPatientId(null)} patient={activePatient}/>
+
 
 
       <Toaster position='top-right' richColors closeButton />
