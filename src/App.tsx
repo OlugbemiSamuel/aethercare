@@ -1,119 +1,103 @@
+import { useEffect, useState } from "react";
+import "./App.css";
+import PatientList from "./components/PatientList";
+import usePatientStore from "./store/usePatientStore";
 
-import { useEffect, useState } from 'react';
-import './App.css'
-import PatientList from './components/PatientList';
-import usePatientStore from './store/usePatientStore';
-
-
-import AddPatientModal from './components/AddPatientModal';
-import { Loader } from 'lucide-react';
-import { Toaster } from 'sonner';
-import PatientDetailsDrawer from './components/ui/PatientDetailsDrawer';
-
-
+import AddPatientModal from "./components/AddPatientModal";
+import { Loader } from "lucide-react";
+import { Toaster } from "sonner";
+import PatientDetailsDrawer from "./components/ui/PatientDetailsDrawer";
+import { useAuthStore } from "./store/useAuthStore";
 
 function App() {
+  const patients = usePatientStore((state) => state.patients);
+  const patientsLoading = usePatientStore((state) => state.isLoading);
+  const fetchPatients = usePatientStore((state) => state.fetchPatients);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
+    null,
+  );
+  const updatePatient = usePatientStore((state) => state.updatePatient);
+    const initialize = useAuthStore((state) => state.initializeAuth);
+    const user = useAuthStore((state) => state.user)
+    const authLoading = useAuthStore((state) => state.isLoading);
 
 
-const patients = usePatientStore((state) => state.patients);
-const isLoading = usePatientStore((state) => state.isLoading);
-const fetchPatients = usePatientStore((state) => state.fetchPatients);
-const [ selectedPatientId, setSelectedPatientId] = useState<string | null>(null)
-    const updatePatient = usePatientStore((state) => state.updatePatient)
+  useEffect(() => {
+   if(user) {
+     fetchPatients();
+   }
+  }, [fetchPatients, user]);
 
+  useEffect(() => {
+    initialize()
 
+  }, []);
 
- useEffect(() => {
-  fetchPatients();
- }, [fetchPatients])
+  if(authLoading) {
+    return <div className="h-screen flex items-center justify-center font-bold">Authenticating AetherCare...</div>;
+  }
 
+  if(!user) return <AddPatientModal/>
 
- 
-
- if(isLoading && patients.length === 0) {
-  
-  return <div className='flex flex-col gap-4 items-center justify-center mt-10' >
-     <Loader/>
-      <p className='text-center p-4'>Fecthing Patients from AetherCare</p> 
-     </div>
- }
-
- 
+  if (patientsLoading && patients.length === 0) {
+    return (
+      <div className="flex flex-col gap-4 items-center justify-center mt-10">
+        <Loader />
+        <p className="text-center p-4">Fecthing Patients from AetherCare</p>
+      </div>
+    );
+  } 
 
 
   const handleSelect = (id: string) => {
-   setSelectedPatientId(id)
+    setSelectedPatientId(id);
   };
 
   const activePatient = patients.find((p) => p.id == selectedPatientId) || null;
 
-  
-
-  
-
-  
-
- 
-
-
-
   return (
     <div className="p-6 relative bg-slate-50 dark:bg-slate-950  transition-colors duration-300 min-h-screen">
-
-      <header className='mb-8 flex justify-between'>
-       <div>
-         <h1 className='text-3xl font-bold text-slate-900 dark:text-slate-100'>AetherCare Dashboard</h1>
-        <p className="text-slate-500  dark:text-slate-100">
-            Real-time  {patients.length === 1 ? 'Patient' : 'Patients'} Management
-         </p>
-       </div>
+      <header className="mb-8 flex justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+            AetherCare Dashboard
+          </h1>
+          <p className="text-slate-500  dark:text-slate-100">
+            Real-time {patients.length === 1 ? "Patient" : "Patients"}{" "}
+            Management
+          </p>
+        </div>
         <AddPatientModal />
-
-
-
-
-
       </header>
 
-      
-
       <main>
-        { patients.length > 0 ? (
-          
-          <PatientList
-        patients={patients}
-        onSelectPatient={handleSelect}/>
-        
+        {patients.length > 0 ? (
+          <PatientList patients={patients} onSelectPatient={handleSelect} />
         ) : (
           <div className="p-10 text-center border-2 border-dashed rounded-xl border-slate-200">
             <p className="text-slate-400">No Patient found in the system</p>
           </div>
-        )
-        
-
-        }
-        
+        )}
       </main>
 
-        <PatientDetailsDrawer key={activePatient?.id ?? ''} onSavePatient={ async (updates) => {
-          try{
-            if(activePatient){
-              await updatePatient(activePatient.id, updates)
+      <PatientDetailsDrawer
+        key={activePatient?.id ?? ""}
+        onSavePatient={async (updates) => {
+          try {
+            if (activePatient) {
+              await updatePatient(activePatient.id, updates);
             }
-          } catch(error){
-            console.error('failed to save note', error)
+          } catch (error) {
+            console.error("failed to save note", error);
           }
-        }
-          
-        } onClose={() => setSelectedPatientId(null)} patient={activePatient}/>
+        }}
+        onClose={() => setSelectedPatientId(null)}
+        patient={activePatient}
+      />
 
-
-
-      <Toaster position='top-right' richColors closeButton />
-     
-      
+      <Toaster position="top-right" richColors closeButton />
     </div>
-  )
+  );
 }
 
 export default App;
