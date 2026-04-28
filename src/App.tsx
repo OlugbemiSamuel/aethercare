@@ -8,6 +8,7 @@ import { Loader } from "lucide-react";
 import { Toaster } from "sonner";
 import PatientDetailsDrawer from "./components/ui/PatientDetailsDrawer";
 import { useAuthStore } from "./store/useAuthStore";
+import Login from "./components/Login";
 
 function App() {
   const patients = usePatientStore((state) => state.patients);
@@ -17,27 +18,29 @@ function App() {
     null,
   );
   const updatePatient = usePatientStore((state) => state.updatePatient);
-    const initialize = useAuthStore((state) => state.initializeAuth);
-    const user = useAuthStore((state) => state.user)
-    const authLoading = useAuthStore((state) => state.isLoading);
-
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const user = useAuthStore((state) => state.user);
+  const authLoading = useAuthStore((state) => state.isLoading);
 
   useEffect(() => {
-   if(user) {
-     fetchPatients();
-   }
+    if (user) {
+      fetchPatients();
+    }
   }, [fetchPatients, user]);
 
   useEffect(() => {
-    initialize()
-
+    initializeAuth();
   }, []);
 
-  if(authLoading) {
-    return <div className="h-screen flex items-center justify-center font-bold">Authenticating AetherCare...</div>;
+  if (authLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center font-bold">
+        Authenticating AetherCare...
+      </div>
+    );
   }
 
-  if(!user) return <AddPatientModal/>
+  if (!user) return <Login />;
 
   if (patientsLoading && patients.length === 0) {
     return (
@@ -46,8 +49,7 @@ function App() {
         <p className="text-center p-4">Fecthing Patients from AetherCare</p>
       </div>
     );
-  } 
-
+  }
 
   const handleSelect = (id: string) => {
     setSelectedPatientId(id);

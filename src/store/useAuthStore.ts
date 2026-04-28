@@ -18,13 +18,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
     initializeAuth: () => {
       supabase.auth.getSession().then(({data:{session}}) => {
+        console.log(session, 'session');
         set({user: session?.user ?? null, isLoading: false})
       })
 
 
     supabase.auth.onAuthStateChange((_event, session) => {
         console.log('auth event', _event);
-        set({user:session?.user ?? null, isLoading: false})
+        set({user:session?.user ?? null, isLoading: false});
 
     });
     },
