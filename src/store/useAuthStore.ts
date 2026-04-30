@@ -1,47 +1,46 @@
 import { create } from "zustand";
 import { supabase } from "../lib/supabase";
 import type { User } from "@supabase/supabase-js";
-
+import { toast } from "sonner";
 
 interface AuthStore {
-    user: User | null ;
-    initializeAuth: () => void;
-    signOut: () => Promise<void>;
-    isAuthenticated: boolean;
-    isLoading: boolean;
+  user: User | null;
+  initializeAuth: () => void;
+  signOut: () => Promise<void>;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true,
+  user: null,
+  isAuthenticated: false,
+  isLoading: true,
 
-    initializeAuth: () => {
-      supabase.auth.getSession().then(({data:{session}}) => {
-        console.log(session, 'session');
-        set({user: session?.user ?? null, isLoading: false})
-      })
-
+  initializeAuth: () => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log(session, "session");
+      console.log(session?.user, "session user");
+      set({ user: session?.user ?? null, isLoading: false });
+    });
 
     supabase.auth.onAuthStateChange((_event, session) => {
-        console.log('auth event', _event);
-        set({user:session?.user ?? null, isLoading: false});
-
+      console.log("auth event", _event);
+      set({ user: session?.user ?? null, isLoading: false });
     });
-    },
+  },
 
-    signOut: async () => {
-        await supabase.auth.signOut();
-    }, 
-    
-
-   
-
-
-
+  signOut: async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.message("an unexpected error occured try again");
+      }
     }
-
-    
-))
-
-
+  },
+}));

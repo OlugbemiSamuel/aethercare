@@ -22,8 +22,10 @@ const PatientList: React.FC<PatientListProps> = ({
   onSelectPatient,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  const debouncedSearch  = useDebounce(searchQuery, 300);
   const [filterStatus, setFilterStatus] = useState("all");
+
+  const isSearching = debouncedSearch !== searchQuery
 
   const handleClearSearch = () => {
     setSearchQuery("");
@@ -126,6 +128,7 @@ const PatientList: React.FC<PatientListProps> = ({
         >
           Search Patients
         </label>
+        {isSearching && <span className="text-xs text-blue-500 animate-pulse">Searching...</span>}
         <input
           id="search"
           placeholder="Search by name or email..."

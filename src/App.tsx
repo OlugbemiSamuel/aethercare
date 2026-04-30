@@ -5,10 +5,12 @@ import usePatientStore from "./store/usePatientStore";
 
 import AddPatientModal from "./components/AddPatientModal";
 import { Loader } from "lucide-react";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import PatientDetailsDrawer from "./components/ui/PatientDetailsDrawer";
 import { useAuthStore } from "./store/useAuthStore";
 import Login from "./components/Login";
+import { Button } from "./components/ui/Button";
+import { supabase } from "./lib/supabase";
 
 function App() {
   const patients = usePatientStore((state) => state.patients);
@@ -21,7 +23,7 @@ function App() {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const user = useAuthStore((state) => state.user);
   const authLoading = useAuthStore((state) => state.isLoading);
-
+  const signOut = useAuthStore((state) => state.signOut);
   useEffect(() => {
     if (user) {
       fetchPatients();
@@ -30,7 +32,9 @@ function App() {
 
   useEffect(() => {
     initializeAuth();
-  }, []);
+  }, [initializeAuth]);
+
+  
 
   if (authLoading) {
     return (
@@ -69,7 +73,10 @@ function App() {
             Management
           </p>
         </div>
-        <AddPatientModal />
+        <div className="flex gap-2">
+          <AddPatientModal />
+        <Button onClick={() => signOut()} variant="danger">Logout</Button>
+        </div>
       </header>
 
       <main>
