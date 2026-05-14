@@ -17,6 +17,7 @@ const Login = () => {
   });
 
   const onSignInWithEmail = async (data: LoginFormData) => {
+    
    
     setIsLoading(true);
     try {
@@ -30,10 +31,12 @@ const Login = () => {
 
       toast.success("Welcome back, Doctor");
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-      toast.error("A system error occurred. Please contact IT");
+      
+     const errorMsg = error instanceof Error ? error.message : "A system error occurred. Please contact IT";
+     toast.error(errorMsg) 
+
+     
+   
     } finally {
       setIsLoading(false);
     }
@@ -59,12 +62,12 @@ const Login = () => {
           )}
         </div>
 
-        <div>
+        <div className="mb-4">
           <input
             type="password"
             {...register("password")}
             placeholder="Password"
-            className={`w-full p-2 border rounded ${errors.email ? "border-red-500" : "border-slate-200"}`}
+            className={`w-full p-2  border rounded ${errors.email ? "border-red-500" : "border-slate-200"}`}
           />
           {errors.password && (
             <p className="text-xs text-red-500 mt-1">

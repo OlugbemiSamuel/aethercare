@@ -1,5 +1,10 @@
 export type Priority = "low" | "medium" | "high" | "emergency";
-export type AppointmentStatus =| "scheduled" | "confirmed" | "in-consultation" | "completed"| "cancelled";
+export type AppointmentStatus =
+  | "scheduled"
+  | "confirmed"
+  | "in-consultation"
+  | "completed"
+  | "cancelled";
 
 export interface Patient {
   id: string;
@@ -11,11 +16,6 @@ export interface Patient {
   blood_group?: string;
   created_at: string;
   priority: Priority;
-  vitals: Vitals;
-  chief_complaint: string;
-  admitted_at: string;
-  notes: string;
-  
 }
 
 export interface Vitals {
@@ -26,13 +26,14 @@ export interface Vitals {
 }
 
 export interface PatientDetails extends Patient {
-  vitals: Vitals;
   chief_complaint: string;
   admitted_at: string;
   notes: string;
+  vitals: Vitals;
+  medical_history?: MedicalRecord[];
 }
 
-export interface Appointement {
+export interface Appointment {
   id: string;
   patient_id: string;
   doctor_id: string;
@@ -50,4 +51,30 @@ export interface Doctor {
   specialization: string;
   license_number: string;
   availability_status: "available" | "busy" | "away";
+}
+
+interface TreatmentAction {
+  action: string;
+  billing_code: string;
+  instructions?: string;
+}
+
+interface Diagnosis {
+  code: string;
+  description: string;
+  condition: "chronic" | "acute";
+}
+
+export interface MedicalRecord {
+  id: string;
+  doctor_id: string;
+  patient_id: string;
+  diagnosis: Diagnosis;
+  treatment_plan: TreatmentAction[];
+  vitals?: {
+    bp?: string;
+    temp?: number;
+    weight?: number;
+  };
+  created_at: string;
 }

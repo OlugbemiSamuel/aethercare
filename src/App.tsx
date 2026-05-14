@@ -44,7 +44,7 @@ function App() {
     );
   }
 
-  if (!user) return <Login />;
+  
 
   if (patientsLoading && patients.length === 0) {
     return (
@@ -62,8 +62,13 @@ function App() {
   const activePatient = patients.find((p) => p.id == selectedPatientId) || null;
 
   return (
+    
     <div className="p-6 relative bg-slate-50 dark:bg-slate-950  transition-colors duration-300 min-h-screen">
-      <header className="mb-8 flex justify-between">
+      <Toaster position="top-right" richColors closeButton />
+
+      {!user ? (<Login/>) : (
+        <>
+         <header className="mb-8 flex justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
             AetherCare Dashboard
@@ -103,8 +108,14 @@ function App() {
         onClose={() => setSelectedPatientId(null)}
         patient={activePatient}
       />
+        </>
 
-      <Toaster position="top-right" richColors closeButton />
+      )
+
+      }
+      
+     
+
     </div>
   );
 }

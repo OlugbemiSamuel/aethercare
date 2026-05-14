@@ -17,11 +17,16 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isLoading: true,
 
   initializeAuth: () => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().
+    then(({ data: { session } }) => {
+      set({ user: session?.user ?? null, isLoading: false });
       console.log(session, "session");
       console.log(session?.user, "session user");
-      set({ user: session?.user ?? null, isLoading: false });
-    });
+    })
+    .catch((err) => {
+      toast.error('Authentication failed:', err)
+      set({isLoading: false, user: null})
+    })
 
     supabase.auth.onAuthStateChange((_event, session) => {
       console.log("auth event", _event);
