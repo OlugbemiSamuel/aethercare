@@ -78,3 +78,6 @@ export interface MedicalRecord {
   };
   created_at: string;
 }
+
+
+export  type NewMedicalRecord = Omit<MedicalRecord, 'id' | 'created_at'>;
