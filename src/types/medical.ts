@@ -6,7 +6,7 @@ export type AppointmentStatus =
   | "completed"
   | "cancelled";
 
-export interface Patient {
+export interface Patient extends PatientDetails  {
   id: string;
   full_name: string;
   email: string;
@@ -19,17 +19,17 @@ export interface Patient {
 }
 
 export interface Vitals {
-  blood_pressure: string;
-  heart_rate: number;
-  temp: number;
-  spO2: number;
+  blood_pressure?: string;
+  heart_rate?: number;
+  temp?: number;
+  spO2?: number;
 }
 
-export interface PatientDetails extends Patient {
-  chief_complaint: string;
-  admitted_at: string;
-  notes: string;
-  vitals: Vitals;
+export interface PatientDetails  {
+  chief_complaint?: string;
+  admitted_at?: string;
+  notes?: string;
+  vitals?: Vitals;
   medical_history?: MedicalRecord[];
 }
 

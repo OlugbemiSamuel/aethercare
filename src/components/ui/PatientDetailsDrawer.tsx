@@ -42,6 +42,7 @@ const PatientDetailsDrawer: React.FC<PatientDetailsDrawerProps> = ({
       },
     };
     onSavePatient(updates);
+     onClose();
   };
 
   const priorityColors = {
@@ -59,7 +60,7 @@ const PatientDetailsDrawer: React.FC<PatientDetailsDrawerProps> = ({
         onClick={onClose}
       />
 
-      {/* 2. THE DRAWER: Slides in from the right */}
+  
       <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-50 overflow-y-auto transition-transform duration-300 ease-in-out">
         {/* HEADER SECTION */}
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start">
@@ -89,7 +90,7 @@ const PatientDetailsDrawer: React.FC<PatientDetailsDrawerProps> = ({
               Current Vitals
             </h3>
             <div className="grid grid-cols-2 gap-4">
-              {/* Vitals Card Component (Mocked data since we'll add this to DB later) */}
+              {/* Vitals Card Component  */}
               <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                 <Heart className="text-red-500 mb-2" size={20} />
                 <p className="text-xs text-slate-500 uppercase">Heart Rate</p>
