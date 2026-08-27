@@ -5,12 +5,12 @@ import usePatientStore from "./store/usePatientStore";
 
 import AddPatientModal from "./components/AddPatientModal";
 import { Loader } from "lucide-react";
-import { toast, Toaster } from "sonner";
+import {  Toaster } from "sonner";
 import PatientDetailsDrawer from "./components/ui/PatientDetailsDrawer";
 import { useAuthStore } from "./store/useAuthStore";
 import Login from "./components/Login";
 import { Button } from "./components/ui/Button";
-import { supabase } from "./lib/supabase";
+
 
 function App() {
   const patients = usePatientStore((state) => state.patients);
@@ -118,6 +118,6 @@ function App() {
 
     </div>
   );
-}
+};
 
 export default App;
